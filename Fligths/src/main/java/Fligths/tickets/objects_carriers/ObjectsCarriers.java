@@ -12,7 +12,7 @@ import java.util.List;
 
 public class ObjectsCarriers implements ObjectsCarrier{
     private List<JsonObject> objectsList = new ArrayList<>();
-
+    
     public void getArrayJson(JsonObject jsonObject){
         JsonArray jsonArray = jsonObject.getJsonArray("tickets");
         objectsList = new ObjectsJsonArrayProcessor().setObjectsToList(jsonArray);
