@@ -44,6 +44,22 @@ public class DataStorage {
         this.price = price;
         this.durationTime = durationTime;
     }
+    public DataStorage(
+        String origin, String origin_name, String destination, String destination_name, String departure_date,
+        String departure_time, String arrival_date, String arrival_time, String carrier, int stops, int price
+    ) {
+        this.origin = origin;
+        this.origin_name = origin_name;
+        this.destination = destination;
+        this.destination_name = destination_name;
+        this.departure_date = departure_date;
+        this.departure_time = departure_time;
+        this.arrival_date = arrival_date;
+        this.arrival_time = arrival_time;
+        this.carrier = carrier;
+        this.stops = stops;
+        this.price = price;
+    }
     public String getOrigin() {
         return origin;
     }
