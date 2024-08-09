@@ -30,8 +30,6 @@ public class ListCarrier {
         jsonToDataStorage.setJsonObjectsList(this.jsonObjectsList);
         jsonToDataStorage.setListStringTime(this.listStringTime);
         this.listDataStorage = jsonToDataStorage.setToDataStorage();
-        //Carriers carriers = new Carriers();
-        //carriers.sqlInsert(listDataStorage);
     }
     public void getMinimumFlightTime(){
         Comparator<DataStorage> timeComparator = new TimeComparator();
