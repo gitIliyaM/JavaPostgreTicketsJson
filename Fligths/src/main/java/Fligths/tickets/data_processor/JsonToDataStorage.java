@@ -21,9 +21,17 @@ public class JsonToDataStorage extends DataStorage {
         this.listStringTime = listStringTime;
     }
     public List<DataStorage> setToDataStorage(){
+        if(listStringTime.isEmpty()){
+            return setDataStorageWithoutTime();
+        } else {
+            return setDataStorageWithTime();
+        }
+
+    }
+    public List<DataStorage> setDataStorageWithTime(){
         int i = 0;
         for(JsonObject jo: jsonObjectsList) {
-                jsonToDataStorage.add (new DataStorage(
+            jsonToDataStorage.add (new DataStorage(
                     jo.getString("origin"),
                     jo.getString("origin_name"),
                     jo.getString("destination"),
@@ -36,9 +44,30 @@ public class JsonToDataStorage extends DataStorage {
                     jo.getInt("stops"),
                     jo.getInt("price"),
                     listStringTime.get(i)
-                    )
-                );
-                i++;
+                )
+            );
+            i++;
+        }
+        return jsonToDataStorage;
+    }
+    public List<DataStorage> setDataStorageWithoutTime() {
+        int i = 0;
+        for (JsonObject jo : jsonObjectsList) {
+            jsonToDataStorage.add(new DataStorage(
+                    jo.getString("origin"),
+                    jo.getString("origin_name"),
+                    jo.getString("destination"),
+                    jo.getString("destination_name"),
+                    jo.getString("departure_date"),
+                    jo.getString("departure_time"),
+                    jo.getString("arrival_date"),
+                    jo.getString("arrival_time"),
+                    jo.getString("carrier"),
+                    jo.getInt("stops"),
+                    jo.getInt("price")
+                )
+            );
+            i++;
         }
         return jsonToDataStorage;
     }
