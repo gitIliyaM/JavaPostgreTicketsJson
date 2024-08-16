@@ -1,7 +1,6 @@
 package Fligths.tickets.postgresql_req_res;
 
 import Fligths.tickets.all_enums.EnumCity;
-import Fligths.tickets.data_processor.DateTimeProcessor;
 import Fligths.tickets.data_processor.ObjectsJsonArrayProcessor;
 
 import javax.json.JsonArray;
@@ -23,9 +22,9 @@ public class SQLRequestResponse implements ReqResMethods{
     private String pass = "pass";
     private String sqlInsert, sqlTime;
     private List<JsonObject> objectsList = new ArrayList<>();
-    private String tableCarrier, tableCarrierTime;
+    private String tableCarrier, tableCarrierTime, commonTableCarriers;
     private String dbFull = "База данных заполнена";
-    private String select;
+    private String selectAsc;
 
     public void getArrayJson(JsonObject jsonObject){
         JsonArray jsonArray = jsonObject.getJsonArray("tickets");
@@ -50,9 +49,11 @@ public class SQLRequestResponse implements ReqResMethods{
         for(String carriers: setCarriers){
             tableCarrier = new Carriers().setSqlTableCarriers().replace("Carriers", carriers);
             tableCarrierTime = new Carriers().setSqlTableTimeAsc().replace("CarriersTimeAsc", carriers+"Time");
+            commonTableCarriers = new Carriers().setSqlTableAllCarriers();
             try (Connection connection = DriverManager.getConnection(url, user, pass); Statement statement = connection.createStatement()) {
                 statement.execute(tableCarrier);
                 statement.execute(tableCarrierTime);
+                statement.execute(commonTableCarriers);
             } catch (SQLException e) {
                 System.out.println(e.getErrorCode());
             }
@@ -68,6 +69,7 @@ public class SQLRequestResponse implements ReqResMethods{
                         connection.createStatement().execute(new Carriers().sqlInsertCarriers(jo));
                         String time = new Carriers().getTimeDifference(jo);
                         connection.createStatement().execute(new Carriers().sqlInsertCarriersTime(jo, time));
+                        connection.createStatement().execute(new Carriers().sqlInsertAllCarriers(jo, time));
                     } catch (SQLException e){
                         dbFull = e.getMessage();
                     }
@@ -80,9 +82,9 @@ public class SQLRequestResponse implements ReqResMethods{
     public void selectTimeAsc() {
         Set<String> setCarriers = getSetCarriers();
         for(String carriers: setCarriers){
-            select = new Carriers().sqlAscSelect(carriers);
+            selectAsc = new Carriers().sqlAscSelect(carriers);
             try (Connection connection = DriverManager.getConnection(url, user, pass)) {
-                ResultSet resultSetAsc = connection.createStatement().executeQuery(select);
+                ResultSet resultSetAsc = connection.createStatement().executeQuery(selectAsc);
                 String minTime = getVvoTlvMinTime(resultSetAsc);
                 System.out.println(minTime);
             } catch (SQLException e) {
@@ -127,33 +129,25 @@ public class SQLRequestResponse implements ReqResMethods{
 
     @Override
     public int getMedian() {
-        int intFirst = 0, intSecond = 0, mediana = 0;
-        int counter = 0, count = 1, i = 0;
-        String select = new Carriers().sqlSelectById();
+        int medianOne = 0, medianTwo = 0, mediana = 0;
+        int count;
         try (Connection connection = DriverManager.getConnection(url, user, pass)) {
-            ResultSet result = connection.createStatement().executeQuery(select);
-            while (result.next()){
-                counter++;
-            }
-            ResultSet resultSetAsc = connection.createStatement().executeQuery(select);
-            if(counter % 2 == 0){
-                while(resultSetAsc.next()) {
-                    if(counter / 2 == count){
-                        i = counter / 2 + 1;
-                        intFirst = resultSetAsc.getInt("price");
-                    } else if(counter / 2 + 1 == i){
-                        intSecond = resultSetAsc.getInt("price");
-                        mediana = (intFirst + intSecond) / 2;
-                        break;
-                    }
-                    count++;
-                    }
-            }else {
-                while(resultSetAsc.next()){
-                    if(counter / 2 == count){
-                        mediana = resultSetAsc.getInt("price");
-                    }
-                }
+            ResultSet resultCount = connection.createStatement().executeQuery(new Carriers().sqlSelectCount());
+            resultCount.next();
+            count = resultCount.getInt(1);
+
+            ResultSet resultMedian = connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY).executeQuery(new Carriers().sqlSelectAll());
+            if(count % 2 == 0){
+                resultMedian.absolute(count / 2);
+                medianOne = resultMedian.getInt("price");
+                resultMedian.relative(1);
+                medianTwo = resultMedian.getInt("price");
+                mediana = (medianOne + medianTwo) / 2;
+            } else if(count == 1){
+                mediana = resultMedian.getInt("price");
+            } else {
+                resultMedian.absolute(count / 2 + 1);
+                mediana = resultMedian.getInt("price");
             }
         } catch (SQLException e) {
             System.out.println(e.getErrorCode());
