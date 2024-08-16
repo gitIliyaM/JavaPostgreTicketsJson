@@ -18,6 +18,5 @@ public class Main {
         System.out.println("Используется Postgresql Data Storage");
         SQLRequestResponse sqlRequestResponse = new SQLRequestResponse();
         sqlRequestResponse.getArrayJson(jsonObject);
-        sqlRequestResponse.setTablesCarriers();
     }
 }
